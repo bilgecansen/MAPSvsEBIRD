@@ -8,4 +8,4 @@ Code for the manuscript titled "Species distribution models can distinguish sour
 
 **summarize_pR.R** calculates probability that a population is a sink (r<1) or source (r>1).
 
-**sdm_vs_pop_plots** produces all the plots in the main manuscript.
+**sdm_vs_pop_plots** produces all the plots in the main manuscript. This script can be run with the data available in the repository.
