@@ -1,12 +1,11 @@
 # Species distribution models on selected species
 
-rm(list = ls())
+library(doSNOW)
+library(foreach)
+library(tictoc)
+library(Hmsc)
 
-if ("pacman" %in% rownames(installed.packages())==F) 
-  install.packages("pacman", repos = "http://cran.rstudio.com/")
-pacman::p_load(doSNOW,foreach, tictoc, Hmsc)
-
-data_sdm <- readRDS("data_sdm_pca2.rds")$data
+data_sdm <- readRDS("data_sdm_pca.rds")$data
 
 # HMSC --------------------------------------------------------------------
 

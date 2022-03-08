@@ -12,12 +12,12 @@ spname <- c("Aimophila ruficeps", "Vireo huttoni","Melozone crissalis",
             "Dryobates pubescens", "Vireo olivaceus", "Passerina cyanea",
             "Pipilo maculatus", "Icteria virens")
 
-taxon_key <- map_chr(spname, function(x) name_suggest(q = x, rank = "species")$key)
+taxon_key <- map_chr(spname, function(x) name_suggest(q = x, rank = "species")[[1]]$key)
 
 # Download occ for 1992-2008 (for use with Maurer Historical) -------------
 
-occ_req <- occ_download(
-  paste("taxonKey = ", paste(taxon_key, collapse = ","), sep = ""),
+occ_req <- occ_download_prep(
+  pred(paste("taxonKey = ", paste(taxon_key, collapse = ","), sep = ""),
   "country = US",
   "hasCoordinate = true",
   "year >= 1992",
@@ -26,7 +26,7 @@ occ_req <- occ_download(
   "month <= 8",
   user = "bilgecan",
   pwd = "Mercimek1109",
-  email = "bilgecan.sen@gmail.com"
+  email = "bilgecan.sen@gmail.com")
 )
 
 # Check download status
