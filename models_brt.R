@@ -26,9 +26,9 @@ results <- foreach(i=1:17, .packages = "dismo", .options.snow = opts) %dopar% {
   
   rate <- 0.001
   
-  res <- gbm.step(data = data_sdm$data[[i]], 
-                  gbm.x = 1:(ncol(data_sdm$data[[i]])-1), 
-                  gbm.y = ncol(data_sdm$data[[i]]), 
+  res <- gbm.step(data = data_sdm[[i]], 
+                  gbm.x = 1:(ncol(data_sdm[[i]])-1), 
+                  gbm.y = ncol(data_sdm[[i]]), 
                   tree.complexity = 3, 
                   family = "bernoulli", 
                   learning.rate = rate, 
@@ -36,25 +36,6 @@ results <- foreach(i=1:17, .packages = "dismo", .options.snow = opts) %dopar% {
                   step.size = 250, 
                   n.trees = 1000,
                   max.trees = 15000)
-  
-  while (is.null(res)) {
-    
-    rate <- rate/2
-    
-    if (rate<0.001) break
-    
-    res <- gbm.step(data = data_sdm[[i]], 
-                     gbm.x = 3:12, 
-                     gbm.y = 13, 
-                     tree.complexity = 3, 
-                     family = "bernoulli", 
-                     learning.rate = rate, 
-                     bag.fraction = 0.75, 
-                     step.size = 250, 
-                     n.trees = 1000,
-                     max.trees = 15000)
-    
-  }
   
   return(res)
           

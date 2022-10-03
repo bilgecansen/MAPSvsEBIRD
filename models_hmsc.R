@@ -5,7 +5,7 @@ library(foreach)
 library(tictoc)
 library(Hmsc)
 
-data_sdm <- readRDS("data_sdm_pca.rds")$data
+data_sdm <- readRDS("data_sdm_pca.rds")
 
 # HMSC --------------------------------------------------------------------
 
@@ -25,8 +25,8 @@ results <- foreach(i=1:length(data_sdm)) %do% {
   trans <- 5000
   thin <- 2
   
-  Y <- as.matrix(data_sdm[[i]]$z)
-  XData <- data_sdm[[i]][,grepl("Dim", names(data_sdm[[i]]))]
+  Y <- as.matrix(data_sdm[[i]]$y)
+  XData <- data_sdm[[i]][,grepl("PC", names(data_sdm[[i]]))]
   
   model_str <- Hmsc(Y = Y, XData = XData, distr = "probit")
   
