@@ -336,16 +336,17 @@ spcode3 <- map2(spcode2, map_dbl(popR2, length), function(x,y) rep(x, y)) %>%
 
 r_group <- map(popR2, function(x) as.factor(as.numeric(log(x)>0)))
 
-auc_brt <- map2_dbl(r_group, pocc_brt, function(x,y) auc(x, y))
-auc_hmsc <- map2_dbl(r_group, pocc_hmsc, function(x,y) auc(x, y))
-#p_brt <- c()
-#p_hmsc <- c()
-#for (i in 1:length(pocc_brt)) {
-  
-  #p_brt[i] <- t.test(pocc_brt[[i]]~r_group[[i]], alternative = "less")$p.value
-  #p_hmsc[i] <- t.test(pocc_hmsc[[i]]~r_group[[i]], alternative = "less")$p.value
-  
-#}
+auc_brt <- map2_dbl(r_group, pocc_brt, function(x,y) auc(x, y, direction = "<"))
+auc_hmsc <- map2_dbl(r_group, pocc_hmsc, function(x,y) auc(x, y, direction = "<"))
+
+auc_random_brt <- map2(r_group, pocc_brt, function(x,y) replicate(1000, auc(sample(x), y, direction = "<")))
+p_value_brt <- map2_dbl(auc_random_brt, auc_brt, function(x,y) length(which(x > y))/1000)
+
+auc_random_hmsc <- map2(r_group, pocc_hmsc, function(x,y) replicate(1000, auc(sample(x), y, direction = "<")))
+p_value_hmsc <- map2_dbl(auc_random_hmsc, auc_hmsc, function(x,y) length(which(x > y))/1000)
+
+auc_brt_text <- paste(round(auc_brt, 3), map_chr(p_value_brt, function(x) ifelse(x <0.05, "*", "")), sep = "")
+auc_hmsc_text <- paste(round(auc_hmsc, 3), map_chr(p_value_hmsc, function(x) ifelse(x <0.05, "*", "")), sep = "")
 
 box_data1 <- data.frame(y = unlist(pocc_hmsc),
                         x = spcode3,
@@ -357,7 +358,7 @@ box_data2 <- data.frame(y = unlist(pocc_brt),
 
 g5 <- ggplot() +
   geom_boxplot(mapping = aes(y = y, x = x, fill = group), data = box_data1, alpha = 0.7) +
-  geom_text(mapping = aes(x = spcode2, y = 1.03, label = round(auc_hmsc, 3)), size = 3) +
+  geom_text(mapping = aes(x = spcode2, y = 1.03, label = auc_hmsc_text), size = 3) +
   geom_text(mapping = aes(x = spcode2, y = -0.05, label = ss[neg_r>=4]), size = 3) +
   scale_fill_manual(labels = c(bquote(bar("r")*"<0"), bquote(bar("r")*">0")), 
                     values = c("grey", "orange")) +
@@ -369,7 +370,7 @@ g5 <- ggplot() +
 
 g6 <- ggplot() +
   geom_boxplot(mapping = aes(y = y, x = x, fill = group), data = box_data2, alpha = 0.7) +
-  geom_text(mapping = aes(x = spcode2, y = 1.03, label = round(auc_brt, 3)), size = 3) +
+  geom_text(mapping = aes(x = spcode2, y = 1.03, label = auc_brt_text), size = 3) +
   geom_text(mapping = aes(x = spcode2, y = -0.05, label = ss[neg_r>=4]), size = 3) +
   scale_fill_manual(labels = c(bquote(bar("r")*"<0"), bquote(bar("r")*">0")), 
                     values = c("grey", "orange")) +
@@ -385,7 +386,6 @@ g5/g6 +
 ggsave("fig3.jpeg", width = 16.8, height = 16.8, units = "cm")
 
 
-
 # Maps --------------------------------------------------------------------
 
 # WE don't have permission to share band and raster data via a repository
@@ -399,7 +399,7 @@ r_avg <- rotate(r_avg)
 z <- values(r_avg)
 coord <- coordinates(r_avg)
 
-plot_map <- function(i, xlimits, ylimits, title, lpos, f) {
+plot_map <- function(i, xlimits, ylimits, title, lpos, f = NULL) {
   eig <- get_eigenvalue(chdata[[i]]$res_pca)
   dim_num <- which(eig$cumulative.variance.percent>80)[1]
   z_pca <- predict(chdata[[i]]$res_pca, z)[,1:dim_num]
@@ -409,14 +409,16 @@ plot_map <- function(i, xlimits, ylimits, title, lpos, f) {
   # Pop coordinates
   pop <- dplyr::select(data_band, pop, lat, long) %>%
     distinct(pop, lat, long) %>%
+    filter(lat < 99 | long < 0) %>%
     group_by(pop) %>%
     summarise(lat = mean(lat),
               long = mean(long))
   
-  pop_coord <- filter(pop, pop %in% as.numeric(row.names(chdata[[i]]$Nobs_ad))[-f])
+  pop_coord <- filter(pop, pop %in% as.numeric(row.names(chdata[[i]]$Nobs_ad)))
   idx_long <- pop_coord$long < 0
   pop_coord <- pop_coord[idx_long,]
-  pop_coord$r <- popR[[i]][-f][idx_long]
+  pop_coord$r <- popR[[i]][idx_long]
+ 
   pop_coord$r <- ifelse(pop_coord$r < 1, "sink", "source")
   
   # BRT predictions
@@ -426,11 +428,13 @@ plot_map <- function(i, xlimits, ylimits, title, lpos, f) {
   ggplot() +
     geom_raster(aes(x = coord[-idx_na,1], y = coord[-idx_na,2], fill = z_pred)) +
     coord_quickmap() +
-    scale_fill_viridis_c() +
-    geom_point(data = pop_coord, mapping = aes(x = long, y = lat, col = r), size = 2) +
+    scale_fill_gradient(limits = c(0,1),
+                        low = "grey", 
+                        high = "green4") +
+    geom_point(data = pop_coord, mapping = aes(x = long, y = lat, col = r), size = 2, alpha = 0.7) +
     scale_color_manual(name = NULL, 
-                       values = c("sink" = "white", 
-                                  "source" = "darkorchid")) +
+                       values = c("sink" = "darkred", 
+                                  "source" = "blue4")) +
     scale_x_continuous(limits = xlimits) +
     scale_y_continuous(limits = ylimits) +
     labs(title = title) +
@@ -447,12 +451,40 @@ plot_map <- function(i, xlimits, ylimits, title, lpos, f) {
 }
 
 g7 <- plot_map(16, xlimits = c(-125, -65), ylimits = c(25, 50), 
-               title = "Spotted Towhee (SPTO)", lpos = "none", f = 49)
+               title = "Spotted Towhee (SPTO)", lpos = "none")
+
 g8 <- plot_map(4, xlimits = c(-125, -65), ylimits = c(25, 50), title = "Hairy Woodpecker (HAWO)", lpos = "bottom")
 
 g7/g8 +
   plot_annotation(tag_levels = 'a')
 ggsave("fig4.jpeg", width = 16.8, height = 23, units = "cm")
+
+plot_map(1, xlimits = c(-125, -65), ylimits = c(25, 50), title = "RCSP", lpos = "bottom")
+ggsave("fig_sup_RCSP.pdf", width = 16.8, height = 16.8, units = "cm", dpi = 600)
+
+plot_map(2, xlimits = c(-125, -65), ylimits = c(25, 50), title = "HUVI", lpos = "bottom")
+ggsave("fig_sup_HUVI.pdf", width = 16.8, height = 16.8, units = "cm", dpi = 600)
+
+plot_map(3, xlimits = c(-125, -65), ylimits = c(25, 50), title = "CALT", lpos = "bottom")
+ggsave("fig_sup_CALT.pdf", width = 16.8, height = 16.8, units = "cm", dpi = 600)
+
+plot_map(5, xlimits = c(-125, -65), ylimits = c(25, 50), title = "BRCR", lpos = "bottom")
+ggsave("fig_sup_BRCR.pdf", width = 16.8, height = 16.8, units = "cm", dpi = 600)
+
+plot_map(6, xlimits = c(-125, -65), ylimits = c(25, 50), title = "WEWP", lpos = "bottom")
+ggsave("fig_sup_WEWP.pdf", width = 16.8, height = 16.8, units = "cm", dpi = 600)
+
+plot_map(7, xlimits = c(-125, -65), ylimits = c(25, 50), title = "MOCH", lpos = "bottom")
+ggsave("fig_sup_MOCH.pdf", width = 16.8, height = 16.8, units = "cm", dpi = 600)
+
+plot_map(8, xlimits = c(-125, -65), ylimits = c(25, 50), title = "CACH", lpos = "bottom")
+ggsave("fig_sup_CACH.pdf", width = 16.8, height = 16.8, units = "cm", dpi = 600)
+
+plot_map(14, xlimits = c(-125, -65), ylimits = c(25, 50), title = "REVI", lpos = "bottom")
+ggsave("fig_sup_REVI.pdf", width = 16.8, height = 16.8, units = "cm", dpi = 600)
+
+plot_map(15, xlimits = c(-125, -65), ylimits = c(25, 50), title = "INBU", lpos = "bottom")
+ggsave("fig_sup_INBU.pdf", width = 16.8, height = 16.8, units = "cm", dpi = 600)
 
 
 # Other Supplementary Figures ---------------------------------------------
