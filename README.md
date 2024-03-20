@@ -1,4 +1,4 @@
-# MAPSvsGBIF
+# MAPSvsEBIRD
 
 Code for the manuscript titled "The potential for species distribution models to distinguish source populations from sinks ". 
 
