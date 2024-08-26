@@ -19,6 +19,8 @@ library(gbm)
 # Install with devtools::install_github("thomasp85/patchwork")
 library(patchwork)
 
+theme_set(theme_bw())
+
 results_brt <- readRDS("results/results_brt_ebird_200.rds")
 results_hmsc_maps <- readRDS("results/results_hmsc_maps_200.rds")
 results_brt_maps <- readRDS("results/results_brt_maps_200.rds")
@@ -274,7 +276,6 @@ df3 <- data.frame(beta = unlist(beta_prob_brt),
                            rep("highN", length(beta_chains_brt[[3]])),
                            rep("PR", length(beta_chains_brt[[4]]))))
 
-theme_set(theme_bw())
 g3 <- ggplot(df3, aes(x = type, y = beta)) + 
   geom_boxplot(fill = "grey", alpha = 0.5) +
   geom_dotplot(binaxis='y', 
@@ -415,11 +416,15 @@ library(ggspatial)
 
 data_midpoint <- readRDS("data/data_midpoint.rds")
 
-usa <- st_as_sf(maps::map('usa', plot = FALSE, fill = TRUE))
+usa <- st_as_sf(maps::map('world', plot = FALSE, fill = TRUE))
 laea <- st_crs("+proj=laea +lat_0=30 +lon_0=-95") # Lambert equal area
 usa <- st_transform(usa, laea)
 
-draw_rmap <- function(i, results_sdm, lgd.pos = "bottom") {
+draw_rmap <- function(i, results_sdm, lgd.pos = "bottom",
+                      xmax = -1000000,
+                      ymax = -280000,
+                      pad_x = 1,
+                      pad_y = 0.7) {
   
   pop_no <- row.names(results_cjspop$chdata[[i]]$Nobs_ad)
   pop_coord <- filter(data_midpoint, pop %in% pop_no)
@@ -452,31 +457,49 @@ draw_rmap <- function(i, results_sdm, lgd.pos = "bottom") {
                           geom = z_sfc))
     
     ggplot() +
-      geom_sf(data = usa, alpha = 0.5) +
+      geom_sf(data = usa, alpha = 0.9, fill = "snow1") +
       geom_sf(data = occ_dat, alpha = 0.5, shape = ".") +
       geom_sf(data = d, size = 2, alpha = 0.9, 
               aes(shape = group, color = Suitability)) +
-      scale_color_gradientn(colours = terrain.colors(10, rev = T),
-                            limits = c(0,1)) +
+      #scale_color_gradientn(colours = terrain.colors(10, rev = T),
+                            #limits = c(0,1)) +
+      scale_colour_gradient2_tableau(
+        palette = "Orange-Blue Diverging", limits = c(0,1)) +
       scale_shape_manual(values = c(17, 19), 
                          labels = c("sink", "source"),
                          name = "MAPS\nLocations") +
       labs(title = bquote(.(word1)*~"("*.(word2)*","~italic(.(word3))*")")) +
-      annotation_scale() +
-      theme(legend.position = lgd.pos)
+      annotate("rect", xmin = -2450853.4, xmax = xmax, 
+               ymin = -457753.3, ymax = ymax, fill = "white") +
+      annotation_scale(mapping = aes(location = "bl"),
+                       pad_x = unit(pad_x, "cm"),
+                       pad_y = unit(pad_y, "cm")) +
+      theme(legend.position = lgd.pos,
+            panel.background = element_rect(fill = "lightblue")) +
+      scale_y_continuous(limits = c(-457753.3, 2381225.5 )) +
+      scale_x_continuous(limits = c(-2450853.4, 2186391.9))
   } else {
     d <- st_sf(data.frame(Suitability = suit, 
                           geom = z_sfc))
     
     ggplot() +
-      geom_sf(data = usa, alpha = 0.5) +
+      geom_sf(data = usa, alpha = 0.9, fill = "snow1") +
       geom_sf(data = occ_dat, alpha = 0.5, shape = ".") +
       geom_sf(data = d, size = 2, alpha = 0.9, 
               aes(color = Suitability)) +
-      scale_color_gradientn(colours = terrain.colors(10, rev = T)) +
+      #scale_color_gradientn(colours = terrain.colors(10, rev = T)) +
+      scale_colour_gradient2_tableau(
+        palette = "Orange-Blue Diverging", limits = c(0,1)) +
       labs(title = bquote(.(word1)*~"("*.(word2)*","~italic(.(word3))*")")) +
-      annotation_scale() +
-      theme(legend.position = lgd.pos)
+      annotate("rect", xmin = -2450853.4, xmax = -1000000, 
+               ymin = -457753.3, ymax = -280000, fill = "white") +
+      annotation_scale(mapping = aes(location = "bl"),
+                       pad_x = unit(1, "cm"),
+                       pad_y = unit(0.7, "cm")) +
+      theme(legend.position = lgd.pos,
+            panel.background = element_rect(fill = "lightblue")) +
+      scale_y_continuous(limits = c(-457753.3, 2381225.5 )) +
+      scale_x_continuous(limits = c(-2450853.4, 2186391.9))
   }
 }
 
@@ -494,12 +517,10 @@ sp_eng <- c("Rufous-crowned Sparrow", "Hutton's Vireo", "California Towhee",
             "Downy Woodpecker", "Red-eyed Vireo", "Indigo Bunting", 
             "Spotted Towhee", "Yellow-breasted Chat")
 
-g_map1 <- draw_rmap(16, results_brt_maps, lgd.pos = "none")
-g_map2 <- draw_rmap(4, results_brt_maps, lgd.pos = "none")
-
-g_map1/g_map2 +
-  plot_annotation(tag_levels = 'a')
-ggsave("figures/fig4.pdf", width = 20, height = 20, units = "cm")
+g_map1 <- draw_rmap(16, results_brt_maps, lgd.pos = "none",
+                    xmax = -750000, ymax = -240000, pad_x = 0.6, pad_y = 0.39)
+g_map2 <- draw_rmap(4, results_brt_maps, lgd.pos = "none",
+                    xmax = -750000, ymax = -240000, pad_x = 0.6, pad_y = 0.39)
 
 draw_rmap(4, results_brt_maps, lgd.pos = "right")
 ggsave("figures/map_legend.pdf", width = 20, height = 20, units = "cm")
@@ -507,11 +528,62 @@ ggsave("figures/map_legend.pdf", width = 20, height = 20, units = "cm")
 for (i in 1:17) {
   print(draw_rmap(i, results_brt_maps, lgd.pos = "bottom"))
   ggsave(paste("figures/sup_map", i, ".jpeg", sep = ""),
-         width = 20, height = 10, units = "cm")
+         width = 20, height = 20, units = "cm")
 }
 
 
 # r, N vs Pocc plots ------------------------------------------------------
+
+plot_r <- function(i, gmap) {
+  
+  n_chains <- MCMCchains(RvsPr_brt[[i]], params = c("alpha", "beta"))
+  y <- list()
+  for (h in 1:length(x_std[[i]])) {
+    
+    y[[h]] <- n_chains[,1] + n_chains[,2]*x_std_brt[[i]][h]
+    
+  }
+  
+  y_avg <- map_dbl(y, mean)
+  y_low <- map_dbl(y, function(x) quantile(x, 0.025))
+  y_high <- map_dbl(y, function(x) quantile(x, 0.975))
+  
+  data1 <- data.frame(x = results_brt_maps[[i]],
+                      y = log(popR[[i]]))
+  
+  data2 <- data.frame(x = results_brt_maps[[i]],
+                      y = y_avg,
+                      y_low = y_low,
+                      y_high = y_high)
+  
+  ggplot(data = data1, aes(x = x, y = y)) +
+    geom_point(aes(color = gmap$layers[[3]]$data$Suitability,
+                   shape = gmap$layers[[3]]$data$group),
+               size = 2) +
+    geom_line(data = data2, aes(x = x, y = y), linewidth = 1.5,
+              color = "darkgoldenrod4", linetype = 2) +
+    geom_ribbon(data = data2, aes(ymin = y_low, ymax = y_high), alpha = 0.4, 
+                fill = "grey") +
+    scale_shape_manual(values = c(17, 19), 
+                       labels = c("sink", "source")) +
+    scale_colour_gradient2_tableau(
+      palette = "Orange-Blue Diverging", limits = c(0,1)) +
+    labs(x = "Suitability", 
+         y = bquote("Intrinsic growth rate"*~"("*bar("r")*")")) +
+    theme(legend.position = "none",
+          panel.border = element_blank(),
+          panel.grid.minor = element_blank(),
+          axis.title = element_text(size = 12))
+}
+
+gr1 <- plot_r(16, g_map1)
+gr2 <- plot_r(4, g_map2)
+
+(g_map1 | gr1) /
+  (g_map2 | gr2) +
+  plot_annotation(tag_levels = "a")
+
+ggsave("figures/fig4.pdf", width = 25, height = 20, units = "cm")  
 
 ## Intrinsic growth
 rg_brt <- list()
