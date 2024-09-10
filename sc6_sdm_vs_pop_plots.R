@@ -150,11 +150,11 @@ df1 <- data.frame(beta = unlist(beta_prob),
 
 theme_set(theme_bw())
 g1 <- ggplot(df1, aes(x = type, y = beta)) + 
-  geom_boxplot(fill = "grey", alpha = 0.5) +
+  geom_boxplot(fill = "#006BA4", alpha = 0.5, outliers = F) +
   geom_dotplot(binaxis='y', 
                stackdir='center', 
                dotsize = .4, 
-               fill="orange") +
+               fill="#FF800E") +
   scale_x_discrete("type", labels = c("N (95%)", 
                                       bquote(bar("N")), 
                                       bquote("P("*bar("r")*">0)"),
@@ -163,7 +163,8 @@ g1 <- ggplot(df1, aes(x = type, y = beta)) +
   labs(y = bquote("P("*beta*">0)"), title = "GLM") +
   theme(axis.title.x = element_blank(),
         axis.title.y = element_text(size = 12),
-        axis.text.x = element_text(size = 10))
+        axis.text.x = element_text(size = 10),
+        panel.border = element_blank())
 
 
 R_sq <- list()
@@ -179,11 +180,11 @@ df2 <- data.frame(R_sq = unlist(R_sq),
                            rep("PR", length(R_sq[[4]]))))
 
 g2 <- ggplot(df2, aes(x = type, y = R_sq)) + 
-  geom_boxplot(fill = "grey", alpha = 0.5) +
+  geom_boxplot(fill = "#006BA4", alpha = 0.5, outliers = F) +
   geom_dotplot(binaxis='y', 
                stackdir='center', 
                dotsize = .4, 
-               fill="orange") +
+               fill="#FF800E") +
   scale_x_discrete("type", labels = c("N (95%)", 
                                       bquote(bar("N")), 
                                       bquote("P("*bar("r")*">0)"),
@@ -192,7 +193,8 @@ g2 <- ggplot(df2, aes(x = type, y = R_sq)) +
   labs(y = bquote("R"^2), title = "GLM") +
   theme(axis.title.x = element_blank(),
         axis.title.y = element_text(size = 12),
-        axis.text.x = element_text(size = 10))
+        axis.text.x = element_text(size = 10),
+        panel.border = element_blank())
 
 
 # Repeat analysis with BRT results ----------------------------------------
@@ -277,11 +279,11 @@ df3 <- data.frame(beta = unlist(beta_prob_brt),
                            rep("PR", length(beta_chains_brt[[4]]))))
 
 g3 <- ggplot(df3, aes(x = type, y = beta)) + 
-  geom_boxplot(fill = "grey", alpha = 0.5) +
+  geom_boxplot(fill = "#006BA4", alpha = 0.5) +
   geom_dotplot(binaxis='y', 
                stackdir='center', 
-               dotsize = .4,
-               fill="orange") +
+               dotsize = .4, 
+               fill="#FF800E") +
   scale_x_discrete("type", labels = c("N (95%)", 
                                       bquote(bar("N")), 
                                       bquote("P("*bar("r")*">0)"),
@@ -290,7 +292,8 @@ g3 <- ggplot(df3, aes(x = type, y = beta)) +
   labs(y = bquote("P("*beta*">0)"), title = "BRT") +
   theme(axis.title.x = element_blank(),
         axis.title.y = element_text(size = 12),
-        axis.text.x = element_text(size = 10))
+        axis.text.x = element_text(size = 10),
+        panel.border = element_blank())
 
 
 R_sq_brt <- list()
@@ -310,11 +313,11 @@ df4 <- data.frame(R_sq = unlist(R_sq_brt),
                            rep("PR", length(R_sq_brt[[4]]))))
 
 g4 <- ggplot(df4, aes(x = type, y = R_sq)) + 
-  geom_boxplot(fill = "grey", alpha = 0.5) +
+  geom_boxplot(fill = "#006BA4", alpha = 0.5) +
   geom_dotplot(binaxis='y', 
                stackdir='center', 
                dotsize = .4, 
-               fill="orange") +
+               fill= "#FF800E") +
   scale_x_discrete("type", labels = c("N (95%)", 
                                       bquote(bar("N")), 
                                       bquote("P("*bar("r")*">0)"),
@@ -323,7 +326,8 @@ g4 <- ggplot(df4, aes(x = type, y = R_sq)) +
   labs(y = bquote("R"^2), title = "BRT") +
   theme(axis.title.x = element_blank(),
         axis.title.y = element_text(size = 12),
-        axis.text.x = element_text(size = 10))
+        axis.text.x = element_text(size = 10),
+        panel.border = element_blank())
 
 
 g3 + g1 + 
@@ -380,11 +384,12 @@ g5 <- ggplot() +
   geom_text(mapping = aes(x = spcode2, y = -0.05, 
                           label = ss[neg_r>=2]), size = 3) +
   scale_fill_manual(labels = c(bquote(bar("r")*">0"), bquote(bar("r")*"<0")), 
-                    values = c("orange", "grey")) +
+                    values = c("#006BA4", "#FF800E")) +
   theme(legend.title = element_blank(),
         legend.text = element_text(size = 12),
         axis.title.x = element_blank(),
-        axis.title.y = element_text(size = 12)) +
+        axis.title.y = element_text(size = 12),
+        panel.border = element_blank()) +
   labs(y = "Suitability", title = "GLM")
 
 g6 <- ggplot() +
@@ -396,11 +401,12 @@ g6 <- ggplot() +
   geom_text(mapping = aes(x = spcode2, y = -0.05, 
                           label = ss[neg_r>=2]), size = 3) +
   scale_fill_manual(labels = c(bquote(bar("r")*">0"), bquote(bar("r")*"<0")), 
-                    values = c("orange", "grey")) +
+                    values = c("#006BA4", "#FF800E")) +
   theme(legend.title = element_blank(),
         legend.text = element_text(size = 12),
         axis.title.x = element_blank(),
-        axis.title.y = element_text(size = 12)) +
+        axis.title.y = element_text(size = 12),
+        panel.border = element_blank()) +
   labs(y = "Suitability", title = "BRT")
 
 g6/g5 +
