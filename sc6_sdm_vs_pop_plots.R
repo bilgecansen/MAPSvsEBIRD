@@ -163,7 +163,7 @@ g1 <- ggplot(df1, aes(x = type, y = beta)) +
   labs(y = bquote("P("*beta*">0)"), title = "GLM") +
   theme(axis.title.x = element_blank(),
         axis.title.y = element_text(size = 12),
-        axis.text.x = element_text(size = 10),
+        axis.text = element_text(size = 10),
         panel.border = element_blank())
 
 
@@ -193,7 +193,7 @@ g2 <- ggplot(df2, aes(x = type, y = R_sq)) +
   labs(y = bquote("R"^2), title = "GLM") +
   theme(axis.title.x = element_blank(),
         axis.title.y = element_text(size = 12),
-        axis.text.x = element_text(size = 10),
+        axis.text = element_text(size = 10),
         panel.border = element_blank())
 
 
@@ -292,7 +292,7 @@ g3 <- ggplot(df3, aes(x = type, y = beta)) +
   labs(y = bquote("P("*beta*">0)"), title = "BRT") +
   theme(axis.title.x = element_blank(),
         axis.title.y = element_text(size = 12),
-        axis.text.x = element_text(size = 10),
+        axis.text = element_text(size = 10),
         panel.border = element_blank())
 
 
@@ -326,19 +326,19 @@ g4 <- ggplot(df4, aes(x = type, y = R_sq)) +
   labs(y = bquote("R"^2), title = "BRT") +
   theme(axis.title.x = element_blank(),
         axis.title.y = element_text(size = 12),
-        axis.text.x = element_text(size = 10),
+        axis.text = element_text(size = 10),
         panel.border = element_blank())
 
 
 g3 + g1 + 
   plot_annotation(tag_levels = 'a') &
   theme(plot.tag.position = c(0.05, 1))
-ggsave("figures/fig1.jpeg", width = 16.8, height = 12, units = "cm")
+ggsave("figures/fig2.pdf", width = 180, height = 120, units = "mm", dpi = 600)
 
 g4 + g2 + 
   plot_annotation(tag_levels = 'a') &
   theme(plot.tag.position = c(0.05, 1))
-ggsave("figures/fig2.jpeg", width = 16.8, height = 12, units = "cm")
+ggsave("figures/fig3.pdf", width = 180, height = 120, units = "mm", dpi = 600)
 
 
 # Comparison of Pocc with r<0 and r>0 -------------------------------------
@@ -378,7 +378,7 @@ box_data2 <- data.frame(y = unlist(pocc_brt),
 g5 <- ggplot() +
   geom_boxplot(mapping = aes(y = y, x = x, fill = group), 
                data = box_data1, alpha = 0.7) +
-  geom_text(mapping = aes(x = spcode2, y = 1.03, 
+  geom_text(mapping = aes(x = spcode2, y = 1.04, 
                           label = round(auc_hmsc, 2)), size = 3, 
             fontface = "bold") +
   geom_text(mapping = aes(x = spcode2, y = -0.05, 
@@ -386,16 +386,18 @@ g5 <- ggplot() +
   scale_fill_manual(labels = c(bquote(bar("r")*">0"), bquote(bar("r")*"<0")), 
                     values = c("#006BA4", "#FF800E")) +
   theme(legend.title = element_blank(),
+        legend.position = "none",
         legend.text = element_text(size = 12),
         axis.title.x = element_blank(),
-        axis.title.y = element_text(size = 12),
+        axis.title.y = element_text(size = 10),
+        axis.text = element_text(size = 10),
         panel.border = element_blank()) +
   labs(y = "Suitability", title = "GLM")
 
 g6 <- ggplot() +
   geom_boxplot(mapping = aes(y = y, x = x, fill = group), 
                data = box_data2, alpha = 0.7) +
-  geom_text(mapping = aes(x = spcode2, y = 1.03, 
+  geom_text(mapping = aes(x = spcode2, y = 1.04, 
                           label = round(auc_brt,2)), size = 3,
             fontface = "bold") +
   geom_text(mapping = aes(x = spcode2, y = -0.05, 
@@ -403,16 +405,20 @@ g6 <- ggplot() +
   scale_fill_manual(labels = c(bquote(bar("r")*">0"), bquote(bar("r")*"<0")), 
                     values = c("#006BA4", "#FF800E")) +
   theme(legend.title = element_blank(),
+        legend.position = "inside",
+        #legend.justification = c("right", "bottom"),
+        legend.position.inside = c(.95, .22),
         legend.text = element_text(size = 12),
         axis.title.x = element_blank(),
-        axis.title.y = element_text(size = 12),
+        axis.title.y = element_text(size = 10),
+        axis.text = element_text(size = 10),
         panel.border = element_blank()) +
   labs(y = "Suitability", title = "BRT")
 
 g6/g5 +
   plot_annotation(tag_levels = 'a') &
   theme(plot.tag.position = c(0.05, 1))
-ggsave("figures/fig3.jpeg", width = 20, height = 16.8, units = "cm")
+ggsave("figures/fig4.pdf", width = 180, height = 155, units = "mm", dpi = 600)
 
 
 # Maps --------------------------------------------------------------------
@@ -481,7 +487,8 @@ draw_rmap <- function(i, results_sdm, lgd.pos = "bottom",
                        pad_x = unit(pad_x, "cm"),
                        pad_y = unit(pad_y, "cm")) +
       theme(legend.position = lgd.pos,
-            panel.background = element_rect(fill = "lightblue")) +
+            panel.background = element_rect(fill = "lightblue"),
+            plot.title = element_text(size = 10)) +
       scale_y_continuous(limits = c(-457753.3, 2381225.5 )) +
       scale_x_continuous(limits = c(-2450853.4, 2186391.9))
   } else {
@@ -503,7 +510,8 @@ draw_rmap <- function(i, results_sdm, lgd.pos = "bottom",
                        pad_x = unit(1, "cm"),
                        pad_y = unit(0.7, "cm")) +
       theme(legend.position = lgd.pos,
-            panel.background = element_rect(fill = "lightblue")) +
+            panel.background = element_rect(fill = "lightblue"),
+            plot.title = element_text(size = 10)) +
       scale_y_continuous(limits = c(-457753.3, 2381225.5 )) +
       scale_x_continuous(limits = c(-2450853.4, 2186391.9))
   }
@@ -524,12 +532,13 @@ sp_eng <- c("Rufous-crowned Sparrow", "Hutton's Vireo", "California Towhee",
             "Spotted Towhee", "Yellow-breasted Chat")
 
 g_map1 <- draw_rmap(16, results_brt_maps, lgd.pos = "none",
-                    xmax = -750000, ymax = -240000, pad_x = 0.6, pad_y = 0.39)
+                    xmax = -500000, ymax = -200000, pad_x = 0.5, pad_y = 0.28)
 g_map2 <- draw_rmap(4, results_brt_maps, lgd.pos = "none",
-                    xmax = -750000, ymax = -240000, pad_x = 0.6, pad_y = 0.39)
+                    xmax = -500000, ymax = -200000, pad_x = 0.5, pad_y = 0.28)
 
-draw_rmap(4, results_brt_maps, lgd.pos = "right")
-ggsave("figures/map_legend.pdf", width = 20, height = 20, units = "cm")
+draw_rmap(4, results_brt_maps, lgd.pos = "bottom")
+ggsave("figures/map_legend.pdf", width = 180, height = 180, units = "mm", 
+       dpi = 600)
 
 for (i in 1:17) {
   print(draw_rmap(i, results_brt_maps, lgd.pos = "bottom"))
@@ -579,17 +588,18 @@ plot_r <- function(i, gmap) {
     theme(legend.position = "none",
           panel.border = element_blank(),
           panel.grid.minor = element_blank(),
-          axis.title = element_text(size = 12))
+          axis.text = element_text(size = 10),
+          axis.title = element_text(size = 10))
 }
 
 gr1 <- plot_r(16, g_map1)
 gr2 <- plot_r(4, g_map2)
 
-(g_map1 | gr1) /
-  (g_map2 | gr2) +
-  plot_annotation(tag_levels = "a")
+g_map1 + gr1 + g_map2 + gr2 +
+  plot_annotation(tag_levels = "a") +
+  plot_layout(widths = c(5, 4))
 
-ggsave("figures/fig4.pdf", width = 25, height = 20, units = "cm")  
+ggsave("figures/fig5.pdf", width = 180, height = 144, units = "mm", dpi = 600)  
 
 ## Intrinsic growth
 rg_brt <- list()
