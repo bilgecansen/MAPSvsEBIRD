@@ -334,11 +334,13 @@ g3 + g1 +
   plot_annotation(tag_levels = 'a') &
   theme(plot.tag.position = c(0.05, 1))
 ggsave("figures/fig2.pdf", width = 180, height = 120, units = "mm", dpi = 600)
+ggsave("figures/fig2.jpeg", width = 180, height = 120, units = "mm", dpi = 600)
 
 g4 + g2 + 
   plot_annotation(tag_levels = 'a') &
   theme(plot.tag.position = c(0.05, 1))
 ggsave("figures/fig3.pdf", width = 180, height = 120, units = "mm", dpi = 600)
+ggsave("figures/fig3.jpeg", width = 180, height = 120, units = "mm", dpi = 600)
 
 
 # Comparison of Pocc with r<0 and r>0 -------------------------------------
@@ -419,6 +421,7 @@ g6/g5 +
   plot_annotation(tag_levels = 'a') &
   theme(plot.tag.position = c(0.05, 1))
 ggsave("figures/fig4.pdf", width = 180, height = 155, units = "mm", dpi = 600)
+ggsave("figures/fig4.jpeg", width = 180, height = 155, units = "mm", dpi = 600)
 
 
 # Maps --------------------------------------------------------------------
